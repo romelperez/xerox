@@ -38,20 +38,16 @@ function getLastProgress () {
   return currentTime - lastTime || 0;
 }
 
-const SHIP_X_MS_RATE = 0.5;
-const SHIP_Y_MS_RATE = 0.1;
-
 function update () {
   const lastProgress = getLastProgress();
 
-  const { width, height } = canvasEl;
-  const xm = lastProgress * SHIP_X_MS_RATE;
-  const ym = lastProgress * SHIP_Y_MS_RATE;
-
   let { x, y } = gameState.ship;
 
-  x = x + xm > width ? 0 : x + xm;
-  y = y + ym > height ? 0 : y + ym;
+  const mx = lastProgress * 0.43;
+  const my = lastProgress * 0.26;
+
+  x += mx;
+  y += my;
 
   gameState.ship = { x, y };
 }
@@ -83,13 +79,62 @@ function render () {
   renderFPS();
 }
 
-function draw () {
+function drawSpace () {
   const { width, height } = canvasEl;
   const { ship } = gameState;
 
-  canvasCtx.clearRect(0, 0, width, height);
+  const tileWidth = 500;
+  const tileHeight = 500;
+
+  const offsetX = ship.x - (width / 2);
+  const offsetY = ship.y - (height / 2);
+
+  // Create a grif of 8x5 tiles.
+  new Array(8).fill(0).forEach((_a, indexW) => {
+    new Array(5).fill(0).forEach((_b, indexH) => {
+      const imgX = indexW * tileWidth - offsetX;
+      const imgY = indexH * tileHeight - offsetY;
+
+      const isOutInW = imgX + tileWidth < 0 || imgX > width;
+      const isOutInH = imgY + tileHeight < 0 || imgY > height;
+
+      if (isOutInW || isOutInH) {
+        return;
+      }
+
+      const img = new Image();
+      img.src = `/images/tiles/${indexH}/${indexW}.jpg`;
+
+      canvasCtx.drawImage(
+        img,
+        0, 0, tileWidth, tileHeight,
+        imgX, imgY, tileWidth, tileHeight
+      );
+    });
+  });
+}
+
+function drawShip () {
+  const { width, height } = canvasEl;
+  const shipWidth = 20;
+  const shipHeight = 10;
+
   canvasCtx.fillStyle = '#0ff';
-  canvasCtx.fillRect(ship.x - 5, ship.y - 5, 10, 10);
+  canvasCtx.fillRect(
+    (width / 2) - shipWidth,
+    (height / 2) - shipHeight,
+    shipWidth,
+    shipHeight
+  );
+}
+
+function draw () {
+  const { width, height } = canvasEl;
+
+  canvasCtx.clearRect(0, 0, width, height);
+
+  drawSpace();
+  drawShip();
 }
 
 function loop (timestamp) {
@@ -112,4 +157,4 @@ function stop () {
 }
 
 setTimeout(start, 1000);
-setTimeout(stop, 3000);
+setTimeout(stop, 10000);
