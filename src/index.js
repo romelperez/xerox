@@ -1,17 +1,19 @@
 const mainEl = document.querySelector('#main');
-const statsEl = document.querySelector('#stats');
 const canvasEl = document.querySelector('#canvas');
-const canvasCtx = canvasEl.getContext('2d');
 
 const engineState = {
+  ctx: null,
   nextFrame: null,
-  lastFrames: []
+  lastFrames: [],
+  currentCommand: ''
 };
 
 const gameState = {
   ship: {
-    x: 0,
-    y: 0
+    x: 2000,
+    y: 1250,
+    energy: 28000,
+    fuel: 1200
   }
 };
 
@@ -40,16 +42,37 @@ function getLastProgress () {
 
 function update () {
   const lastProgress = getLastProgress();
+  const { currentCommand } = engineState;
+  const isWorking = !!currentCommand;
 
-  let { x, y } = gameState.ship;
+  const movementFactor = lastProgress * 0.25;
+  const energyFactor = lastProgress * 0.07;
+  const fuelFactor = lastProgress * 0.01;
 
-  const mx = lastProgress * 0.43;
-  const my = lastProgress * 0.26;
+  let { x, y, energy, fuel } = gameState.ship;
 
-  x += mx;
-  y += my;
+  if (currentCommand === 'left') {
+    x -= movementFactor;
+  } else if (currentCommand === 'right') {
+    x += movementFactor;
+  }
 
-  gameState.ship = { x, y };
+  if (currentCommand === 'up') {
+    y -= movementFactor;
+  } else if (currentCommand === 'down') {
+    y += movementFactor;
+  }
+
+  energy -= energyFactor;
+
+  if (isWorking) {
+    fuel -= fuelFactor;
+  }
+
+  gameState.ship.x = x;
+  gameState.ship.y = y;
+  gameState.ship.energy = energy;
+  gameState.ship.fuel = fuel;
 }
 
 function renderCanvas () {
@@ -58,25 +81,57 @@ function renderCanvas () {
 }
 
 function renderFPS () {
+  const statsEl = document.querySelector('#stats');
   const fpsEl = statsEl.querySelector('.stats__fps');
   const barsEl = statsEl.querySelector('.stats__bars');
   const { fps, fpss } = getRate();
 
   const barsHTML = fpss
-    // Maximum FPS is 100.
-    .map(fps => Math.round(Math.min(100, fps)))
+    // Maximum FPS is 60.
+    .map(fps => Math.round(Math.min(60, fps)))
     // Get the FPS percentage to set the bar element's height.
-    .map(fps => (fps / 100) * barsEl.offsetHeight)
+    .map(fps => (fps / 60) * barsEl.offsetHeight)
     .map(barHeight => `<i class="stats__bar" style="height: ${barHeight}px"></i>`)
     .join('');
 
-  fpsEl.innerHTML = `${Math.round(fps)} FPS`;
+  fpsEl.innerHTML = `<b>${Math.round(fps)}</b> FPS`;
   barsEl.innerHTML = barsHTML;
+}
+
+function renderPosition () {
+  const positionEl = document.querySelector('#position');
+  const { x, y } = gameState.ship;
+
+  positionEl.innerHTML = `
+    <div>X: <b>${Math.round(x)}</b></div>
+    <div>Y: <b>${Math.round(y)}</b></div>
+  `;
+}
+
+function renderStatus () {
+  const statusEl = document.querySelector('#status');
+
+  statusEl.innerHTML = `
+    <div>Command: <b>${engineState.currentCommand || 'hold'}</b></div>
+  `;
+}
+
+function renderResources () {
+  const resourcesEl = document.querySelector('#resources');
+  const { energy, fuel } = gameState.ship;
+
+  resourcesEl.innerHTML = `
+    <div>Energy: <b>${Math.round(energy)}</b></div>
+    <div>Fuel: <b>${Math.round(fuel)}</b></div>
+  `;
 }
 
 function render () {
   renderCanvas();
   renderFPS();
+  renderPosition();
+  renderStatus();
+  renderResources();
 }
 
 function drawSpace () {
@@ -105,7 +160,7 @@ function drawSpace () {
       const img = new Image();
       img.src = `/images/tiles/${indexH}/${indexW}.jpg`;
 
-      canvasCtx.drawImage(
+      engineState.context.drawImage(
         img,
         0, 0, tileWidth, tileHeight,
         imgX, imgY, tileWidth, tileHeight
@@ -115,23 +170,58 @@ function drawSpace () {
 }
 
 function drawShip () {
-  const { width, height } = canvasEl;
-  const shipWidth = 20;
-  const shipHeight = 10;
+  const { context, currentCommand } = engineState;
+  const isWorking = !!currentCommand;
 
-  canvasCtx.fillStyle = '#0ff';
-  canvasCtx.fillRect(
-    (width / 2) - shipWidth,
-    (height / 2) - shipHeight,
-    shipWidth,
-    shipHeight
-  );
+  const { width, height } = canvasEl;
+  const shipWidth = 40;
+  const shipHeight = 40;
+  const x = (width / 2) - (shipWidth / 2);
+  const y = (height / 2) - (shipHeight / 2);
+
+  // Thrusters
+  context.shadowBlur = 10;
+  context.shadowColor = '#0ff';
+  context.fillStyle = 'rgba(0,255,255,0.2)';
+  if (currentCommand === 'left') {
+    context.fillRect(x + shipWidth, y + (shipHeight / 4), shipWidth / 4, (shipHeight / 2));
+  } else if (currentCommand === 'right') {
+    context.fillRect(x - (shipWidth / 4), y + (shipHeight / 4), shipWidth / 4, (shipHeight / 2));
+  } else if (currentCommand === 'up') {
+    context.fillRect(x + (shipWidth / 4), y + shipHeight, shipWidth / 2, (shipHeight / 4));
+  } else if (currentCommand === 'down') {
+    context.fillRect(x + (shipWidth / 4), y - (shipHeight / 4), shipWidth / 2, (shipHeight / 4));
+  }
+
+  // Exterior
+  context.shadowBlur = 2;
+  context.shadowColor = '#099';
+  context.fillStyle = '#099';
+  context.fillRect(x, y, shipWidth, shipHeight);
+
+  // Body
+  context.shadowBlur = 0;
+  context.fillStyle = '#444';
+  context.fillRect(x + 1, y + 1, shipWidth - 2, shipHeight - 2);
+
+  // Engines
+  context.shadowBlur = isWorking ? 2 : 0;
+  context.shadowColor = isWorking ? '#0ff' : '';
+  context.fillStyle = isWorking ? '#0ff' : '#099';
+  context.fillRect(x + 4, y + 4, shipWidth / 2, 1);
+  context.fillRect(x + 4, y + 8, shipWidth / 2, 1);
+
+  // Status
+  context.shadowBlur = 2;
+  context.shadowColor = '#0ff';
+  context.fillStyle = '#0ff';
+  context.fillRect(x + shipWidth - 8, y + shipHeight - 4, 8, 4);
 }
 
 function draw () {
   const { width, height } = canvasEl;
 
-  canvasCtx.clearRect(0, 0, width, height);
+  engineState.context.clearRect(0, 0, width, height);
 
   drawSpace();
   drawShip();
@@ -144,17 +234,66 @@ function loop (timestamp) {
   render();
   draw();
 
-  gameState.nextFrame = window.requestAnimationFrame(loop);
+  engineState.nextFrame = window.requestAnimationFrame(loop);
+}
+
+function getKeyboardCommand (code) {
+  switch (event.which) {
+    // a, d, w, s arrow keys.
+    case 97: return 'left';
+    case 100: return 'right';
+    case 119: return 'up';
+    case 115: return 'down';
+    default: return '';
+  }
+}
+
+function addEvents () {
+  document.addEventListener('keypress', event => {
+    const command = getKeyboardCommand(event.which);
+    engineState.currentCommand = command;
+  });
+
+  document.addEventListener('keyup', () => {
+    engineState.currentCommand = '';
+  });
+
+  canvasEl.addEventListener('touchstart', event => {
+    const [{ clientX: x, clientY: y }] = event.changedTouches;
+    const { width, height } = canvasEl;
+
+    if (y > height / 3 && y < height * (2 / 3)) {
+      if (x < width / 3) {
+        engineState.currentCommand = 'left';
+      } else if (x > width * (2 / 3)) {
+        engineState.currentCommand = 'right';
+      }
+    }
+
+    if (x > width / 3 && x < width * (2 / 3)) {
+      if (y < height / 3) {
+        engineState.currentCommand = 'up';
+      } else if (y > height * (2 / 3)) {
+        engineState.currentCommand = 'down';
+      }
+    }
+  });
+
+  document.addEventListener('touchend', () => {
+    engineState.currentCommand = '';
+  });
 }
 
 function start () {
   mainEl.style.opacity = 1;
-  gameState.nextFrame = window.requestAnimationFrame(loop);
+  addEvents();
+  engineState.context = canvasEl.getContext('2d');
+  engineState.nextFrame = window.requestAnimationFrame(loop);
 }
 
+// eslint-disable-next-line
 function stop () {
-  window.cancelAnimationFrame(gameState.nextFrame);
+  window.cancelAnimationFrame(engineState.nextFrame);
 }
 
 setTimeout(start, 1000);
-setTimeout(stop, 10000);

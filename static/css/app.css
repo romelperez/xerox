@@ -37,7 +37,6 @@
   padding: 0 4px;
   line-height: 20px;
   white-space: nowrap;
-  color: #ff0;
 }
 
 .stats__bars {
@@ -50,4 +49,57 @@
 .stats__bar {
   flex: 1;
   background-color: #0ff;
+}
+
+/* POSITION */
+
+.position {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-width: 1px 1px 0 0;
+  border-color: #0ff;
+  border-style: solid;
+  padding: 2px 4px;
+  background-color: #222;
+}
+
+/* STATUS */
+
+.status {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  border-width: 1px 1px 0 1px;
+  border-color: #0ff;
+  border-style: solid;
+  padding: 2px 4px;
+  background-color: #222;
+}
+
+.status b {
+  text-transform: uppercase;
+}
+
+/* RESOURCES */
+
+.resources {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-width: 1px 0 0 1px;
+  border-color: #0ff;
+  border-style: solid;
+  padding: 2px 4px;
+  background-color: #222;
 }

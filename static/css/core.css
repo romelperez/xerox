@@ -16,3 +16,8 @@ html, body {
   color: #0ff;
   background-color: #000;
 }
+
+b {
+  color: #ff0;
+  font-weight: normal;
+}
