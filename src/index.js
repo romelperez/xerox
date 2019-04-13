@@ -2,7 +2,7 @@ const mainEl = document.querySelector('#main');
 const canvasEl = document.querySelector('#canvas');
 
 const engineState = {
-  ctx: null,
+  context: null,
   nextFrame: null,
   lastFrames: [],
   currentCommand: ''
@@ -12,8 +12,8 @@ const gameState = {
   ship: {
     x: 2000,
     y: 1250,
-    energy: 28000,
-    fuel: 1200
+    energy: 3200,
+    fuel: 440
   }
 };
 
@@ -51,22 +51,22 @@ function update () {
 
   let { x, y, energy, fuel } = gameState.ship;
 
-  if (currentCommand === 'left') {
-    x -= movementFactor;
-  } else if (currentCommand === 'right') {
-    x += movementFactor;
-  }
+  energy = Math.max(energy - energyFactor, 0);
 
-  if (currentCommand === 'up') {
-    y -= movementFactor;
-  } else if (currentCommand === 'down') {
-    y += movementFactor;
-  }
+  if (energy > 0 && fuel > 0) {
+    if (currentCommand === 'left') {
+      x -= movementFactor;
+    } else if (currentCommand === 'right') {
+      x += movementFactor;
+    } else if (currentCommand === 'up') {
+      y -= movementFactor;
+    } else if (currentCommand === 'down') {
+      y += movementFactor;
+    }
 
-  energy -= energyFactor;
-
-  if (isWorking) {
-    fuel -= fuelFactor;
+    if (isWorking) {
+      fuel = Math.max(fuel - fuelFactor, 0);
+    }
   }
 
   gameState.ship.x = x;
@@ -110,9 +110,18 @@ function renderPosition () {
 
 function renderStatus () {
   const statusEl = document.querySelector('#status');
+  const { ship } = gameState;
+
+  let status = 'OK';
+  if (ship.energy < 1000) {
+    status = 'ENERGY LOW';
+  } else if (ship.fuel < 200) {
+    status = 'FUEL LOW';
+  }
 
   statusEl.innerHTML = `
     <div>Command: <b>${engineState.currentCommand || 'hold'}</b></div>
+    <div>Status: <b>${status}</b></div>
   `;
 }
 
@@ -171,6 +180,7 @@ function drawSpace () {
 
 function drawShip () {
   const { context, currentCommand } = engineState;
+  const { ship } = gameState;
   const isWorking = !!currentCommand;
 
   const { width, height } = canvasEl;
@@ -183,14 +193,16 @@ function drawShip () {
   context.shadowBlur = 10;
   context.shadowColor = '#0ff';
   context.fillStyle = 'rgba(0,255,255,0.2)';
-  if (currentCommand === 'left') {
-    context.fillRect(x + shipWidth, y + (shipHeight / 4), shipWidth / 4, (shipHeight / 2));
-  } else if (currentCommand === 'right') {
-    context.fillRect(x - (shipWidth / 4), y + (shipHeight / 4), shipWidth / 4, (shipHeight / 2));
-  } else if (currentCommand === 'up') {
-    context.fillRect(x + (shipWidth / 4), y + shipHeight, shipWidth / 2, (shipHeight / 4));
-  } else if (currentCommand === 'down') {
-    context.fillRect(x + (shipWidth / 4), y - (shipHeight / 4), shipWidth / 2, (shipHeight / 4));
+  if (ship.energy > 0 && ship.fuel > 0) {
+    if (currentCommand === 'left') {
+      context.fillRect(x + shipWidth, y + (shipHeight / 4), shipWidth / 4, (shipHeight / 2));
+    } else if (currentCommand === 'right') {
+      context.fillRect(x - (shipWidth / 4), y + (shipHeight / 4), shipWidth / 4, (shipHeight / 2));
+    } else if (currentCommand === 'up') {
+      context.fillRect(x + (shipWidth / 4), y + shipHeight, shipWidth / 2, (shipHeight / 4));
+    } else if (currentCommand === 'down') {
+      context.fillRect(x + (shipWidth / 4), y - (shipHeight / 4), shipWidth / 2, (shipHeight / 4));
+    }
   }
 
   // Exterior
@@ -212,9 +224,10 @@ function drawShip () {
   context.fillRect(x + 4, y + 8, shipWidth / 2, 1);
 
   // Status
+  const statusColor = ship.energy < 1000 || ship.fuel < 200 ? '#f00' : '#0ff';
   context.shadowBlur = 2;
-  context.shadowColor = '#0ff';
-  context.fillStyle = '#0ff';
+  context.shadowColor = statusColor;
+  context.fillStyle = statusColor;
   context.fillRect(x + shipWidth - 8, y + shipHeight - 4, 8, 4);
 }
 

@@ -75,7 +75,7 @@
   bottom: 0;
   transform: translateX(-50%);
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   overflow: hidden;
   border-width: 1px 1px 0 1px;
   border-color: #0ff;
