@@ -17,9 +17,9 @@
   height: 100%;
 }
 
-/* STATS */
+/* FPS */
 
-.stats {
+.fps {
   position: absolute;
   right: 0;
   top: 0;
@@ -29,24 +29,24 @@
   border-width: 0 0 1px 1px;
   border-color: #0ff;
   border-style: solid;
+  height: 20px;
+  line-height: 20px;
+  white-space: nowrap;
   background-color: #222;
 }
 
-.stats__fps {
+.fps__value {
   flex: 1;
   padding: 0 4px;
-  line-height: 20px;
-  white-space: nowrap;
 }
 
-.stats__bars {
+.fps__bars {
   display: flex;
   width: 100px;
-  height: 20px;
   align-items: flex-end;
 }
 
-.stats__bar {
+.fps__bar {
   flex: 1;
   background-color: #0ff;
 }
