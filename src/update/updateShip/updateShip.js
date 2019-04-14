@@ -2,7 +2,10 @@ const {
   COMMAND_LEFT,
   COMMAND_RIGHT,
   COMMAND_UP,
-  COMMAND_DOWN
+  COMMAND_DOWN,
+  SHIP_FACTOR_MS_PX,
+  SHIP_FACTOR_MS_ENERGY,
+  SHIP_FACTOR_MS_FUEL
 } = require('../../consts');
 const { getEngineState, getLastProgress } = require('../../engineState');
 const { getGameState, updateGameShipState } = require('../../gameState');
@@ -14,9 +17,9 @@ function updateShip () {
 
   const isWorking = !!currentCommand;
 
-  const movementFactor = lastProgress * 0.25;
-  const energyFactor = lastProgress * 0.07;
-  const fuelFactor = lastProgress * 0.01;
+  const movementFactor = lastProgress * SHIP_FACTOR_MS_PX;
+  const energyFactor = lastProgress * SHIP_FACTOR_MS_ENERGY;
+  const fuelFactor = lastProgress * SHIP_FACTOR_MS_FUEL;
 
   let { x, y, energy, fuel, direction } = ship;
 

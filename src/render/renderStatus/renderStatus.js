@@ -15,9 +15,16 @@ function renderStatus () {
   const command = currentCommand || 'HOLD';
 
   let status = 'OK';
-  if (ship.energy < 1000) {
+  if (ship.energy === 0) {
+    status = 'NO ENERGY';
+  }
+  else if (ship.energy < 1000) {
     status = 'ENERGY LOW';
-  } else if (ship.fuel < 200) {
+  }
+  else if (ship.fuel === 0) {
+    status = 'NO FUEL';
+  }
+  else if (ship.fuel < 200) {
     status = 'FUEL LOW';
   }
 

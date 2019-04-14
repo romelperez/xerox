@@ -5,8 +5,8 @@ const {
   COMMAND_DOWN
 } = require('../consts');
 
-const compose = (...fns) => x => fns.reduceRight((v, f) => f(v), x);
-const pipe = (...fns) => x => fns.reduce((v, f) => f(v), x);
+const compose = (...fns) => x => fns.reduceRight((v, fn) => fn(v), x);
+const pipe = (...fns) => x => fns.reduce((v, fn) => fn(v), x);
 
 function toRadians (angle) {
   return angle * (Math.PI / 180);

@@ -2,7 +2,9 @@ const {
   COMMAND_LEFT,
   COMMAND_RIGHT,
   COMMAND_UP,
-  COMMAND_DOWN
+  COMMAND_DOWN,
+  SHIP_WIDTH,
+  SHIP_HEIGHT
 } = require('../../consts');
 const { toRadians } = require('../../utils');
 const { getEngineState } = require('../../engineState');
@@ -21,10 +23,6 @@ function drawShip () {
 
   const { width, height } = canvasEl;
 
-  const size = 115;
-  const x = (width / 2) - (size / 2);
-  const y = (height / 2) - (size / 2);
-
   const image = new Image();
   image.src = '/images/ship.png';
 
@@ -41,32 +39,32 @@ function drawShip () {
   if (ship.energy > 0 && ship.fuel > 0) {
     if (currentCommand === COMMAND_LEFT) {
       context.fillRect(
-        x + size,
-        y + (size / 2) - (thrusterSize / 2),
+        (width / 2) + (SHIP_HEIGHT / 2),
+        (height / 2) - (thrusterSize / 2),
         thrusterLength,
         thrusterSize
       );
     }
     else if (currentCommand === COMMAND_RIGHT) {
       context.fillRect(
-        x - thrusterLength,
-        y + (size / 2) - (thrusterSize / 2),
+        (width / 2) - (SHIP_HEIGHT / 2) - thrusterLength,
+        (height / 2) - (thrusterSize / 2),
         thrusterLength,
         thrusterSize
       );
     }
     else if (currentCommand === COMMAND_UP) {
       context.fillRect(
-        x + (size / 2) - (thrusterSize / 2),
-        y + size,
+        (width / 2) - (thrusterSize / 2),
+        (height / 2) + (SHIP_HEIGHT / 2),
         thrusterSize,
         thrusterLength
       );
     }
     else if (currentCommand === COMMAND_DOWN) {
       context.fillRect(
-        x + (size / 2) - (thrusterSize / 2),
-        y - thrusterLength,
+        (width / 2) - (thrusterSize / 2),
+        (height / 2) - (SHIP_HEIGHT / 2) - thrusterLength,
         thrusterSize,
         thrusterLength
       );
@@ -77,7 +75,7 @@ function drawShip () {
   context.shadowBlur = 0;
   context.translate(width / 2, height / 2);
   context.rotate(angle);
-  context.drawImage(image, -size / 2, -size / 2, size, size);
+  context.drawImage(image, -SHIP_WIDTH / 2, -SHIP_HEIGHT / 2, SHIP_WIDTH, SHIP_HEIGHT);
   context.translate(-width / 2, -height / 2);
   context.rotate(-angle);
 }
