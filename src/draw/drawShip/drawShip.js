@@ -4,61 +4,82 @@ const {
   COMMAND_UP,
   COMMAND_DOWN
 } = require('../../consts');
+const { toRadians } = require('../../utils');
 const { getEngineState } = require('../../engineState');
 const { getGameState } = require('../../gameState');
+
+const shipAnglesByDirection = {
+  [COMMAND_LEFT]: toRadians(270),
+  [COMMAND_RIGHT]: toRadians(90),
+  [COMMAND_UP]: toRadians(0),
+  [COMMAND_DOWN]: toRadians(180)
+};
 
 function drawShip () {
   const { canvasEl, context, currentCommand } = getEngineState();
   const { ship } = getGameState();
 
-  const isWorking = !!currentCommand;
   const { width, height } = canvasEl;
 
-  const shipWidth = 40;
-  const shipHeight = 40;
-  const x = (width / 2) - (shipWidth / 2);
-  const y = (height / 2) - (shipHeight / 2);
+  const size = 115;
+  const x = (width / 2) - (size / 2);
+  const y = (height / 2) - (size / 2);
 
-  // Thrusters
-  context.shadowBlur = 10;
+  const image = new Image();
+  image.src = '/images/ship.png';
+
+  const angle = shipAnglesByDirection[ship.direction];
+
+  context.shadowBlur = 6;
   context.shadowColor = '#0ff';
-  context.fillStyle = 'rgba(0,255,255,0.25)';
+  context.fillStyle = 'rgba(0,255,255,0.4)';
+
+  const thrusterSize = 10;
+  const thrusterLength = 15;
+
+  // Thruster light
   if (ship.energy > 0 && ship.fuel > 0) {
     if (currentCommand === COMMAND_LEFT) {
-      context.fillRect(x + shipWidth, y + (shipHeight / 4), shipWidth / 4, (shipHeight / 2));
-    } else if (currentCommand === COMMAND_RIGHT) {
-      context.fillRect(x - (shipWidth / 4), y + (shipHeight / 4), shipWidth / 4, (shipHeight / 2));
-    } else if (currentCommand === COMMAND_UP) {
-      context.fillRect(x + (shipWidth / 4), y + shipHeight, shipWidth / 2, (shipHeight / 4));
-    } else if (currentCommand === COMMAND_DOWN) {
-      context.fillRect(x + (shipWidth / 4), y - (shipHeight / 4), shipWidth / 2, (shipHeight / 4));
+      context.fillRect(
+        x + size,
+        y + (size / 2) - (thrusterSize / 2),
+        thrusterLength,
+        thrusterSize
+      );
+    }
+    else if (currentCommand === COMMAND_RIGHT) {
+      context.fillRect(
+        x - thrusterLength,
+        y + (size / 2) - (thrusterSize / 2),
+        thrusterLength,
+        thrusterSize
+      );
+    }
+    else if (currentCommand === COMMAND_UP) {
+      context.fillRect(
+        x + (size / 2) - (thrusterSize / 2),
+        y + size,
+        thrusterSize,
+        thrusterLength
+      );
+    }
+    else if (currentCommand === COMMAND_DOWN) {
+      context.fillRect(
+        x + (size / 2) - (thrusterSize / 2),
+        y - thrusterLength,
+        thrusterSize,
+        thrusterLength
+      );
     }
   }
 
-  // Exterior
-  context.shadowBlur = isWorking ? 6 : 0;
-  context.shadowColor = '#0ff';
-  context.fillStyle = '#099';
-  context.fillRect(x, y, shipWidth, shipHeight);
-
-  // Body
+  // Image
   context.shadowBlur = 0;
-  context.fillStyle = '#444';
-  context.fillRect(x + 1, y + 1, shipWidth - 2, shipHeight - 2);
-
-  // Engines
-  context.shadowBlur = isWorking ? 2 : 0;
-  context.shadowColor = isWorking ? '#0ff' : '';
-  context.fillStyle = isWorking ? '#0ff' : '#099';
-  context.fillRect(x + 4, y + 4, shipWidth / 2, 1);
-  context.fillRect(x + 4, y + 8, shipWidth / 2, 1);
-
-  // Status
-  const statusColor = ship.energy < 1000 || ship.fuel < 200 ? '#f00' : '#0ff';
-  context.shadowBlur = 2;
-  context.shadowColor = statusColor;
-  context.fillStyle = statusColor;
-  context.fillRect(x + shipWidth - 8, y + shipHeight - 4, 8, 4);
+  context.translate(width / 2, height / 2);
+  context.rotate(angle);
+  context.drawImage(image, -size / 2, -size / 2, size, size);
+  context.translate(-width / 2, -height / 2);
+  context.rotate(-angle);
 }
 
 module.exports = { drawShip };

@@ -1,7 +1,6 @@
+const { pipe } = require('../utils');
 const { updateShip } = require('./updateShip');
 
-function update () {
-  updateShip();
-}
+const update = pipe(updateShip);
 
 module.exports = { update };

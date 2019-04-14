@@ -18,19 +18,26 @@ function updateShip () {
   const energyFactor = lastProgress * 0.07;
   const fuelFactor = lastProgress * 0.01;
 
-  let { x, y, energy, fuel } = ship;
+  let { x, y, energy, fuel, direction } = ship;
 
   energy = Math.max(energy - energyFactor, 0);
 
   if (energy > 0 && fuel > 0) {
     if (currentCommand === COMMAND_LEFT) {
       x -= movementFactor;
-    } else if (currentCommand === COMMAND_RIGHT) {
+      direction = COMMAND_LEFT;
+    }
+    else if (currentCommand === COMMAND_RIGHT) {
       x += movementFactor;
-    } else if (currentCommand === COMMAND_UP) {
+      direction = COMMAND_RIGHT;
+    }
+    else if (currentCommand === COMMAND_UP) {
       y -= movementFactor;
-    } else if (currentCommand === COMMAND_DOWN) {
+      direction = COMMAND_UP;
+    }
+    else if (currentCommand === COMMAND_DOWN) {
       y += movementFactor;
+      direction = COMMAND_DOWN;
     }
 
     if (isWorking) {
@@ -38,7 +45,7 @@ function updateShip () {
     }
   }
 
-  updateGameShipState({ x, y, energy, fuel });
+  updateGameShipState({ x, y, energy, fuel, direction });
 }
 
 module.exports = { updateShip };
